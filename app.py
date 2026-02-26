@@ -8,16 +8,17 @@ st.set_page_config(page_title="Aura Signal", page_icon="🌌")
 st.title("🌌 Aura Signal Private")
 st.markdown("---")
 
-# Funzione per recuperare il prezzo REALE di BRETT
+# Funzione per recuperare il prezzo REALE di BRETT (ID: brett-2)
 def get_price():
     try:
-        # Usiamo l'API di CoinGecko (URL pubblico)
+        # API di CoinGecko specifica per Brett (Base)
         url = "https://api.coingecko.com"
         with urllib.request.urlopen(url) as response:
             data = json.loads(response.read().decode())
-            return data['brett']['usd']
-    except:
-        return 0.00750 # Prezzo di riserva se internet fa i capricci
+            return data['brett-2']['usd']
+    except Exception as e:
+        # Valore di riserva se l'API non risponde
+        return 0.00750 
 
 # Visualizzazione Prezzo
 prezzo_live = get_price()
@@ -28,7 +29,7 @@ if st.button("🔄 AGGIORNA PREZZO ORA"):
 
 st.markdown("---")
 
-# Input al CENTRO della pagina (Niente sidebar)
+# Input al CENTRO della pagina
 st.header("⚙️ Impostazioni Trade")
 budget = st.number_input("Tuo Budget ($)", value=500, step=50)
 leva = st.slider("Leva Finanziaria (Leverage)", 1, 10, 3)
@@ -46,9 +47,9 @@ with col1:
 with col2:
     st.error(f"STOP LOSS (SL):\n**${stop_loss:.5f}**")
 
-# Calcolo Profitto
+# Calcolo Profitto Netto
 profitto_netto = (budget * leva) * 0.015
 st.info(f"💰 Con questa operazione punti a guadagnare: **${profitto_netto:.2f}**")
 
 st.markdown("---")
-st.caption("Aura Assistant v2.0 - Solo per uso personale")
+st.caption("Aura Assistant v2.1 - Sistema Real-Time attivato")
