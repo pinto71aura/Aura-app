@@ -1,37 +1,54 @@
 import streamlit as st
-import requests
+import json
+import urllib.request
 
 st.set_page_config(page_title="Aura Signal", page_icon="🌌")
-st.title("🌌 Aura Signal Private")
 
-# Funzione per recuperare il prezzo VERO di BRETT
+# Titolo e Stile
+st.title("🌌 Aura Signal Private")
+st.markdown("---")
+
+# Funzione per recuperare il prezzo REALE di BRETT
 def get_price():
     try:
+        # Usiamo l'API di CoinGecko (URL pubblico)
         url = "https://api.coingecko.com"
-        response = requests.get(url).json()
-        return response['brett']['usd']
+        with urllib.request.urlopen(url) as response:
+            data = json.loads(response.read().decode())
+            return data['brett']['usd']
     except:
-        return 0.00750 # Prezzo di emergenza se l'API non risponde
+        return 0.00750 # Prezzo di riserva se internet fa i capricci
 
+# Visualizzazione Prezzo
 prezzo_live = get_price()
 st.metric("Prezzo Live BRETT (USD)", f"${prezzo_live:.5f}")
 
-# I tuoi parametri
-st.sidebar.header("Impostazioni Trade")
-budget = st.sidebar.number_input("Tuo Budget ($)", value=500)
-leva = st.sidebar.slider("Leva Finanziaria", 1, 10, 3)
+if st.button("🔄 AGGIORNA PREZZO ORA"):
+    st.rerun()
 
-# Logica Aura Sniper
-st.subheader("🎯 Strategia Sniper")
+st.markdown("---")
+
+# Input al CENTRO della pagina (Niente sidebar)
+st.header("⚙️ Impostazioni Trade")
+budget = st.number_input("Tuo Budget ($)", value=500, step=50)
+leva = st.slider("Leva Finanziaria (Leverage)", 1, 10, 3)
+
+# Logica Matematica Aura Sniper
+st.markdown("---")
+st.subheader("🎯 Strategia Sniper (+1.5%)")
+
 target = prezzo_live * (1 + 0.015)
 stop_loss = prezzo_live * (1 - 0.01)
 
 col1, col2 = st.columns(2)
-col1.success(f"VENDI A (TP): \n**${target:.5f}**")
-col2.error(f"STOP LOSS (SL): \n**${stop_loss:.5f}**")
+with col1:
+    st.success(f"VENDI A (TP):\n**${target:.5f}**")
+with col2:
+    st.error(f"STOP LOSS (SL):\n**${stop_loss:.5f}**")
 
-profitto = (budget * leva) * 0.015
-st.info(f"💰 Se colpisce il target guadagni: **${profitto:.2f}**")
+# Calcolo Profitto
+profitto_netto = (budget * leva) * 0.015
+st.info(f"💰 Con questa operazione punti a guadagnare: **${profitto_netto:.2f}**")
 
-if st.button("Aggiorna Prezzo 🔄"):
-    st.rerun()
+st.markdown("---")
+st.caption("Aura Assistant v2.0 - Solo per uso personale")
