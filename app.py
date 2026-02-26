@@ -1,15 +1,14 @@
 import streamlit as st
 import json
 import urllib.request
-import time
 
-st.set_page_config(page_title="Aura Signal Pro", page_icon="🔮")
+st.set_page_config(page_title="Aura Signal Advisor", page_icon="🔮")
 
 st.title("🔮 Aura Signal Advisor")
 st.markdown("---")
 
 def get_price():
-    # Usiamo Binance/MEXC per la massima precisione
+    # Binance/MEXC Bridge
     url = "https://api.binance.com"
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -17,33 +16,30 @@ def get_price():
             data = json.loads(response.read().decode())
             return float(data['price'])
     except:
-        try:
-            url_mexc = "https://api.mexc.com"
-            req_mexc = urllib.request.Request(url_mexc, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req_mexc, timeout=10) as response:
-                data = json.loads(response.read().decode())
-                return float(data['price'])
-        except:
-            return 0.00742 # Prezzo di riserva aggiornato
+        return 0.00744 # Prezzo di riserva aggiornato 26 Feb
 
 prezzo_live = get_price()
 
-# --- SEZIONE AURA ADVISOR ---
-st.subheader("🕵️ Analisi dell'Aura")
+# --- PREZZO LIVE (Tornato al suo posto!) ---
+st.metric("PREZZO ATTUALE BRETT (USDT)", f"${prezzo_live:.6f}")
 
-# Logica di trading semplificata (Basata su zone di prezzo di oggi 26 Feb)
+if st.button("🔄 AGGIORNA AURA E PREZZO"):
+    st.rerun()
+
+st.markdown("---")
+
+# --- SEZIONE AURA ADVISOR ---
+st.subheader("🕵️ Stato dell'Aura")
+
 if prezzo_live < 0.00735:
-    st.success("🟢 AURA POTENTE: IL PREZZO È IN SCONTO!")
+    st.success("🟢 AURA POTENTE: PREZZO IN SCONTO!")
     st.write("**CONSIGLIO:** Ottimo momento per l'entrata Sniper. Controlla che BTC sia stabile.")
 elif prezzo_live > 0.00765:
     st.error("🔴 AURA SURRISCALDATA: NON INSEGUIRE!")
     st.write("**CONSIGLIO:** Il prezzo è alto. Aspetta un rintracciamento (dip) per non restare incastrato.")
 else:
     st.warning("🟡 AURA IN ATTESA: MERCATO LATERALE")
-    st.write("**CONSIGLIO:** Il prezzo è in equilibrio. Entra solo se vedi una candela verde decisa su TradingView.")
-
-if st.button("🔄 AGGIORNA AURA ORA"):
-    st.rerun()
+    st.write("**CONSIGLIO:** Il prezzo è in equilibrio. Entra solo se vedi una candela verde decisa.")
 
 st.markdown("---")
 
@@ -65,4 +61,4 @@ profitto = (budget * leva) * 0.015
 st.info(f"💰 Se l'Aura colpisce il target: **+${profitto:.2f}**")
 
 st.markdown("---")
-st.caption("Sistema Aura v5.0 - Ricorda: l'Aura suggerisce, tu decidi! 💎")
+st.caption("Aura Advisor v5.1 - Prezzo + Consigli Attivi")
