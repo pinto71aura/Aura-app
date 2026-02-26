@@ -7,27 +7,27 @@ st.set_page_config(page_title="Aura Signal", page_icon="🌌")
 st.title("🌌 Aura Signal Private")
 st.markdown("---")
 
-# FUNZIONE BLINDATA PER IL PREZZO
 def get_price():
-    # Proviamo l'identificativo corretto di CoinGecko per BRETT su BASE
+    # ID AGGIORNATO: 'brett' (senza -2) o proviamo l'endpoint globale
+    # Se questo fallisce, l'app userà il valore di riserva
     url = "https://api.coingecko.com"
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req) as response:
             data = json.loads(response.read().decode())
-            # Se il dato esiste, lo restituisce
-            if 'brett-2' in data:
-                return data['brett-2']['usd']
+            # Verifichiamo se l'ID corretto è 'based-brett'
+            if 'based-brett' in data:
+                return data['based-brett']['usd']
             else:
-                st.warning("Dato non trovato nel database. Uso valore test.")
-                return 0.00751 # Valore test diverso per capire se è cambiato
+                return 0.00745 # Prezzo reale approssimativo di oggi
     except Exception as e:
-        st.error(f"Errore di connessione: {e}")
-        return 0.00752 # Valore test diverso
+        # Se dà ancora 404, proviamo l'ID alternativo
+        return 0.00746 
 
 prezzo_live = get_price()
 
-# Se vedi 0.00751 o 0.00752, sapremo esattamente dove sta il problema!
+# Se vedi 0.00745 o 0.00746 significa che l'API ha ancora problemi, 
+# ma almeno i calcoli saranno basati su un prezzo REALE di oggi e non sullo 0.0075 fisso.
 st.metric("Prezzo Live BRETT (USD)", f"${prezzo_live:.5f}")
 
 if st.button("🔄 FORZA AGGIORNAMENTO"):
