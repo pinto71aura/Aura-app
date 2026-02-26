@@ -8,29 +8,35 @@ st.title("🔮 Aura Signal Advisor")
 st.markdown("---")
 
 def get_price():
-    # Usiamo DexScreener API per BRETT su BASE (Il più preciso)
-    # Token Address di BRETT: 0x532f27101965dd16442e59d40670faf5ebb142e4
-    url = "https://api.dexscreener.com"
+    # Usiamo l'API di Binance (La più stabile al mondo)
+    # Nota: BRETT è scambiato come BRETTUSDT su molti exchange
+    url = "https://api.binance.com"
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=5) as response:
             data = json.loads(response.read().decode())
-            return float(data['pair']['priceUsd'])
+            return float(data['price'])
     except:
-        # Se DexScreener fallisce, usiamo CoinGecko come backup
         try:
-            url_cg = "https://api.coingecko.com"
-            req_cg = urllib.request.Request(url_cg, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req_cg, timeout=10) as response:
-                data_cg = json.loads(response.read().decode())
-                return data_cg['based-brett']['usd']
+            # Backup su MEXC se Binance fallisce
+            url_mexc = "https://api.mexc.com"
+            req_mexc = urllib.request.Request(url_mexc, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req_mexc, timeout=5) as response:
+                data_m = json.loads(response.read().decode())
+                return float(data_m['price'])
         except:
-            return 0.00744 # Riserva
+            # Se entrambi falliscono, usiamo un numero leggermente diverso 
+            # per capire se il blocco persiste: 0.00741
+            return 0.00741
 
 prezzo_live = get_price()
 
-# --- PREZZO LIVE ---
-st.metric("PREZZO REALE BRETT (BASE)", f"${prezzo_live:.6f}")
+# --- VISUALIZZAZIONE ---
+if prezzo_live == 0.00741:
+    st.error("⚠️ ERRORE CONNESSIONE: Il server è temporaneamente bloccato.")
+    st.write("Prova a cliccare il tasto AGGIORNA tra 10 secondi.")
+else:
+    st.metric("PREZZO ATTUALE BRETT (USDT)", f"${prezzo_live:.6f}")
 
 if st.button("🔄 AGGIORNA AURA E PREZZO"):
     st.rerun()
@@ -40,20 +46,19 @@ st.markdown("---")
 # --- SEZIONE AURA ADVISOR ---
 st.subheader("🕵️ Stato dell'Aura")
 
-# Logica dinamica: confronta il prezzo con zone calde/fredde
 if prezzo_live < 0.00730:
     st.success("🟢 AURA POTENTE: PREZZO IN SCONTO!")
-    st.write("**CONSIGLIO:** Prezzo sotto la media. Buona zona Sniper.")
+    st.write("**CONSIGLIO:** Ottimo momento per l'entrata Sniper.")
 elif prezzo_live > 0.00760:
     st.error("🔴 AURA SURRISCALDATA: ASPETTA!")
-    st.write("**CONSIGLIO:** Troppo alto ora. Rischio rintracciamento.")
+    st.write("**CONSIGLIO:** Rischio rintracciamento. Non inseguire.")
 else:
     st.warning("🟡 AURA NEUTRA: FASE DI ATTESA")
-    st.write("**CONSIGLIO:** Mercato in equilibrio. Entra solo se vedi forza.")
+    st.write("**CONSIGLIO:** Mercato in equilibrio. Attendi forza.")
 
 st.markdown("---")
 
-# --- SEZIONE CALCOLATORE ---
+# --- CALCOLATORE ---
 budget = st.number_input("Tuo Budget ($)", value=500, step=50)
 leva = st.slider("Leva (Leverage)", 1, 10, 3)
 
@@ -67,7 +72,4 @@ with c1:
 with c2:
     st.error(f"STOP LOSS:\n**${sl:.6f}**")
 
-profitto = (budget * leva) * 0.015
-st.info(f"💰 Profitto potenziale: **+${profitto:.2f}**")
-
-st.caption("Aura Advisor v6.0 - Dati aggregati da DexScreener")
+st.info(f"💰 Profitto potenziale: **+${(budget * leva) * 0.015:.2f}**")
